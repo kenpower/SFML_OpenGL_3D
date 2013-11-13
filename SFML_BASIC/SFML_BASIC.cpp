@@ -34,8 +34,8 @@ void Draw_Cuboid(float,float,float);
 int main() 
 { 
     // Create the main window 
-    sf::RenderWindow App(sf::VideoMode(800, 600, 32), "SFML OpenGL"); 
-    int width=800,height=600;
+    sf::RenderWindow App(sf::VideoMode(600, 600, 32), "SFML OpenGL"); 
+    int width=600,height=600;
     // Create a clock for measuring time elapsed     
     sf::Clock Clock; 
       
@@ -50,14 +50,14 @@ int main()
     glLoadIdentity(); 
      
     //set up a 3D Perspective View volume
-    //gluPerspective(90.f, 1.f, 1.f, 300.0f);//fov, aspect, zNear, zFar 
+    gluPerspective(90.f, 1.f, 1.f, 300.0f);//fov, aspect, zNear, zFar 
  
     //set up a  orthographic projection same size as window
     //this means the vertex coordinates are in pixel space
-    //glOrtho(0,800,0,600,0,1); // use pixel coordinates
+    //glOrtho(0,800,0,600,0,100); // use pixel coordinates
     
 	
-	glOrtho(-10,+10,-10,+10,0,20); // use pixel coordinates
+	
    
 	//glMatrixMode(GL_PROJECTION); // reset projection matrix
 	//glLoadIdentity();
@@ -95,17 +95,24 @@ int main()
         glMatrixMode(GL_MODELVIEW); 
         glLoadIdentity(); 
          
-		glTranslatef(0,0,-10);
-		
+		//glTranslatef(0,0,-10); //pish back 10 units from camera
+		gluLookAt(	0,0,100,// camera position
+					0,0,0, //look at this point
+					0,1,1); //camera up
 
 		static float ang=0.0;
-		glRotatef(ang,1,0,0);
-		glRotatef(ang*2,0,1,0);
+		glRotatef(ang,1,0,0); //spin about x-axis
+		glRotatef(ang*2,0,1,0);//spin about y-axis
 		
 
-		ang+=0.01;
+		ang+=0.01f;
 
-		Draw_Cuboid(3,3,3);
+		Draw_Cuboid(20,35,50);
+
+		glTranslatef(0,40,0);//move everyting after this line by 40 units along y-axis
+		glRotatef(ang*5,0,0,1); //spin about z-axis
+
+		Draw_Cuboid(10,10,10);
 
 		   
         // Finally, display rendered frame on screen 
@@ -127,7 +134,7 @@ void Draw_Cuboid(float width,float height,float depth){
 									{0.0f,0.0f,0.0f},
 									{0.0f,0.0f,1.0f}};
 
-		GLfloat normal[3];
+		//GLfloat normal[3];
 		glPushMatrix();	
 		glScalef(width,height,depth);
 		glTranslatef(-0.5,-0.5,-0.5);
