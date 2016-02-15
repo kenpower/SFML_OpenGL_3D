@@ -65,8 +65,47 @@ int main()
 	//calculate new prespective and aspect ratio
 	//gluPerspective(45.0f,(GLfloat)width/(GLfloat)height,1.0f,1000.0f);
 
+	GLfloat materialAmbDiff[] = {0.9f, 0.1f, 0.0f, 1.0f}; // create an array of RGBA values
+ 
+ 
+	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, materialAmbDiff); 
+    // set the diffuse & ambient reflection colour for the front of faces
+
+	GLfloat materialSpecular[] = {1.0f, 1.0f, 1.0f, 1.0f}; // create an array of RGBA values (White)
+	GLfloat materialShininess[] = {128.0f}; // select value between 0-128, 128=shiniest
+ 
+ 
+	glMaterialfv(GL_FRONT, GL_SPECULAR, materialSpecular); // set the colour of specular reflection
+	glMaterialfv(GL_FRONT, GL_SHININESS, materialShininess); // set shininess of the material
+
+
 	glMatrixMode(GL_MODELVIEW); // reset modelview matrix
 	glLoadIdentity();
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+
+
+	GLfloat light_color[]={1.0, 1.0, 1.0, 1.0};
+	GLfloat light_position[]={0.0, 15.0, 0.0, 1.0};
+ 
+ 
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_color); // set color of diffuse component
+	glLightfv(GL_LIGHT0, GL_SPECULAR, light_color); // set color of specular component
+	
+	glEnable(GL_NORMALIZE);
+	glEnable(GL_LIGHT_MODEL_LOCAL_VIEWER);
+	
+
+ 
+	glLightfv(GL_LIGHT0, GL_POSITION, light_position);   // set position
+
+
+	sf::Shader shader;
+	if(!shader.loadFromFile("vertex.glsl","pixel.glsl")){
+		char c;
+		std::cin >>c;
+        exit(1);
+    }
 
 
     // Start game loop 
@@ -90,30 +129,43 @@ int main()
         //Prepare for drawing 
         // Clear color and depth buffer 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
-   
+	
+		sf::Shader::bind(&shader);
         // Apply some transformations 
         glMatrixMode(GL_MODELVIEW); 
         glLoadIdentity(); 
          
-		//glTranslatef(0,0,-10); //pish back 10 units from camera
-		gluLookAt(	0,0,100,// camera position
+		//glTranslatef(0,0,-20); //push back 10 units from camera
+		gluLookAt(	0,0,20,// camera position
 					0,0,0, //look at this point
 					0,1,1); //camera up
 
 		static float ang=0.0;
 		glRotatef(ang,1,0,0); //spin about x-axis
-		glRotatef(ang*2,0,1,0);//spin about y-axis
+		//glRotatef(ang*2,0,1,0);//spin about y-axis
 		
 
 		ang+=0.01f;
 
-		Draw_Cuboid(20,35,50);
+		glNormal3d(0,1,0);
+		double grid=0.5;
+		glBegin(GL_TRIANGLES);
+		for(double i=-10;i<10;i+=grid){
+			for(double j=-10;j<10;j+=grid){
+				glVertex3d(i,		0,	j);
+				glVertex3d(i+grid,	0,	j);
+				glVertex3d(i,		0,	j+grid);
 
-		glTranslatef(0,40,0);//move everyting after this line by 40 units along y-axis
-		glRotatef(ang*5,0,0,1); //spin about z-axis
+				glVertex3d(i+grid,	0,	j);
+				glVertex3d(i,		0,	j+grid);
+				glVertex3d(i+grid,	0,	j+grid);
 
-		Draw_Cuboid(10,10,10);
+			
+			}
+		}
 
+
+		glEnd();
 		   
         // Finally, display rendered frame on screen 
         App.display(); 
@@ -121,61 +173,4 @@ int main()
    
     return EXIT_SUCCESS; 
 }
-
-//Draw a cube at the origin
-void Draw_Cuboid(float width,float height,float depth){
-		// points of a cube
-	static GLfloat points[][3]={	{1.0f,1.0f,1.0f},
-									{1.0f,1.0f,0.0f},
-									{0.0f,1.0f,0.0f},
-									{0.0f,1.0f,1.0f},
-									{1.0f,0.0f,1.0f},
-									{1.0f,0.0f,0.0f},
-									{0.0f,0.0f,0.0f},
-									{0.0f,0.0f,1.0f}};
-
-		//GLfloat normal[3];
-		glPushMatrix();	
-		glScalef(width,height,depth);
-		glTranslatef(-0.5,-0.5,-0.5);
-		glBegin(GL_QUADS);
-		//top 
 		
-		//NormalVector(points[0],points[1],points[2],normal);
-		//glNormal3fv(normal);
-		glColor3d(1.0,1.0,1.0);
-		glVertex3fv(points[0]); glVertex3fv(points[1]); glVertex3fv(points[2]); glVertex3fv(points[3]);
-		
-		//front
-		//NormalVector(points[0],points[3],points[7],normal);
-		//glNormal3fv(normal);
-		glColor3d(1.0,0.0,1.0);
-		glVertex3fv(points[0]); glVertex3fv(points[3]); glVertex3fv(points[7]); glVertex3fv(points[4]);
-
-		//back
-		//NormalVector(points[1],points[5],points[6],normal);
-		//glNormal3fv(normal);
-		glColor3d(1.0,1.0,0.0);
-		glVertex3fv(points[1]); glVertex3fv(points[5]); glVertex3fv(points[6]); glVertex3fv(points[2]);
-
-		//left
-		//NormalVector(points[3],points[2],points[6],normal);
-		//glNormal3fv(normal);
-		glColor3d(0.0,1.0,0.0);
-		glVertex3fv(points[3]); glVertex3fv(points[2]); glVertex3fv(points[6]); glVertex3fv(points[7]);
-
-		//right
-		//NormalVector(points[1],points[0],points[4],normal);
-		//glNormal3fv(normal);
-		glColor3d(0.0,0.0,1.0);
-		glVertex3fv(points[1]); glVertex3fv(points[0]); glVertex3fv(points[4]); glVertex3fv(points[5]);
-
-		//bottom
-		//NormalVector(points[4],points[7],points[6],normal);
-		//glNormal3fv(normal);
-		glColor3d(1.0,0.0,0.0);
-		glVertex3fv(points[4]); glVertex3fv(points[7]); glVertex3fv(points[6]); glVertex3fv(points[5]);
-
-	glEnd();
-	glPopMatrix();
-}
